@@ -1,4 +1,4 @@
-#pragma execution_character_set("utf-8") // ±ØĞë¼Ó£¬·ÀÖ¹ÖĞÎÄÂÒÂë
+#pragma execution_character_set("utf-8") // ï¿½ï¿½ï¿½ï¿½Ó£ï¿½ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 #include "USBCore.h"
 #include "Common.h"
 #include <windows.h>
@@ -7,45 +7,48 @@
 #include <devguid.h>
 #include <fstream>
 #include <sstream>
+#include <commdlg.h>
 
 #pragma comment(lib, "setupapi.lib")
 
 // ==========================================
-// È«¾Ö±äÁ¿¶¨Òå (ÔÚÕâÀï·ÖÅäÄÚ´æ)
+// È«ï¿½Ö±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú´ï¿½)
 // ==========================================
-std::vector<USBDevice> g_usbDevices;                                      // ´æ´¢µ±Ç°¼ì²âµ½µÄ USB Éè±¸ÁĞ±í
-std::vector<std::string> g_logicalDrives;                                 // ´æ´¢ÏµÍ³µÄÂß¼­Çı¶¯Æ÷ÁĞ±í£¨Èç F:\£©
-std::vector<std::string> g_logs;                                          // Ó¦ÓÃ³ÌĞòÈÕÖ¾£¬ÓÃÓÚ¼ÇÂ¼ÊÂ¼ş»òµ÷ÊÔĞÅÏ¢
-int g_selectedDriveIdx = -1;                                              // µ±Ç°Ñ¡ÖĞµÄÇı¶¯Æ÷Ë÷Òı£¨ÓÃÓÚ UI »òÄÚ²¿Âß¼­£©
-int g_selectedDeviceIndex = -1;                                           // µ±Ç°Ñ¡ÖĞµÄ USB Éè±¸Ë÷Òı
-char g_userBuffer[128] = "";                                              // ÓÃ»§ÊäÈëµÄ×Ö·û»º³åÇø£¨´óĞ¡Îª 128 ×Ö½Ú£©
-SpeedResult g_lastSpeedTest = { false, 0.0, 0.0, "µÈ´ı²âÊÔ..." };         // ±£´æÉÏÒ»´Î´ÅÅÌ²âËÙ½á¹ûµÄ½á¹¹Ìå
+std::vector<USBDevice> g_usbDevices;                                      // ï¿½æ´¢ï¿½ï¿½Ç°ï¿½ï¿½âµ½ï¿½ï¿½ USB ï¿½è±¸ï¿½Ğ±ï¿½
+std::vector<std::string> g_logicalDrives;                                 // ï¿½æ´¢ÏµÍ³ï¿½ï¿½ï¿½ß¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğ±ï¿½ï¿½ï¿½ï¿½ï¿½ F:\ï¿½ï¿½
+std::vector<std::string> g_logs;                                          // Ó¦ï¿½Ã³ï¿½ï¿½ï¿½ï¿½ï¿½Ö¾ï¿½ï¿½ï¿½ï¿½ï¿½Ú¼ï¿½Â¼ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
+int g_selectedDriveIdx = -1;                                              // ï¿½ï¿½Ç°Ñ¡ï¿½Ğµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ UI ï¿½ï¿½ï¿½Ú²ï¿½ï¿½ß¼ï¿½ï¿½ï¿½
+int g_selectedDeviceIndex = -1;                                           // ï¿½ï¿½Ç°Ñ¡ï¿½Ğµï¿½ USB ï¿½è±¸ï¿½ï¿½ï¿½ï¿½
+char g_userBuffer[128] = "";                                              // ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğ¡Îª 128 ï¿½Ö½Ú£ï¿½
+SpeedResult g_lastSpeedTest = { false, 0.0, 0.0, "ï¿½È´ï¿½ï¿½ï¿½ï¿½ï¿½..." };         // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½Î´ï¿½ï¿½Ì²ï¿½ï¿½Ù½ï¿½ï¿½ï¿½Ä½á¹¹ï¿½ï¿½
 
-bool g_isMonitorRunning = false;                                          // ¿ª¹Ø
-float g_speedHistory[90] = { 0.0f };                                      // ³õÊ¼»¯Îª0
-int g_historyOffset = 0;                                                  // Í¼±í¹ö¶¯Æ«ÒÆÁ¿
-std::string g_monitorDevName = "Unknown";                                 // µ±Ç°ÕıÔÚ²âµÄÉè±¸Ãû
-DWORD g_lastMonitorTick = 0;                                              // ÉÏÒ»´Î²âËÙµÄÊ±¼ä´Á
+bool g_isMonitorRunning = false;                                          // ï¿½ï¿½ï¿½ï¿½
+float g_speedHistory[90] = { 0.0f };                                      // ï¿½ï¿½Ê¼ï¿½ï¿½Îª0
+int g_historyOffset = 0;                                                  // Í¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ«ï¿½ï¿½ï¿½ï¿½
+std::string g_monitorDevName = "Unknown";                                 // ï¿½ï¿½Ç°ï¿½ï¿½ï¿½Ú²ï¿½ï¿½ï¿½è±¸ï¿½ï¿½
+DWORD g_lastMonitorTick = 0;                                              // ï¿½ï¿½Ò»ï¿½Î²ï¿½ï¿½Ùµï¿½Ê±ï¿½ï¿½ï¿½
 
 // ==========================================
-// ¹¤¾ßº¯ÊıÊµÏÖ
+// ï¿½ï¿½ï¿½ßºï¿½ï¿½ï¿½Êµï¿½ï¿½
 // ==========================================
 std::string GuessUSBProtocol(const std::string& hwid, const std::string& name) {
-    // ÕâÊÇÒ»¸öÆô·¢Ê½ÅĞ¶Ï£¬×¼È·»ñÈ¡ĞèÒª¸´ÔÓµÄ IOCTL ²éÑ¯
+    // ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê½ï¿½Ğ¶Ï£ï¿½×¼È·ï¿½ï¿½È¡ï¿½ï¿½Òªï¿½ï¿½ï¿½Óµï¿½ IOCTL ï¿½ï¿½Ñ¯
     if (hwid.find("ROOT_HUB30") != std::string::npos) return "USB 3.0 (Root)";
     if (hwid.find("USB 3.0") != std::string::npos) return "USB 3.0";
     if (name.find("USB 3.0") != std::string::npos) return "USB 3.0";
     if (name.find("SuperSpeed") != std::string::npos) return "USB 3.x";
     if (name.find("Composite") != std::string::npos) return "Composite";
-    // ´ó²¿·ÖÄ¬ÈÏÊÇ 2.0
+    // ï¿½ó²¿·ï¿½Ä¬ï¿½ï¿½ï¿½ï¿½ 2.0
     return "USB 2.0 / 1.1";
 }
 
 std::string WStringToString(const std::wstring& wstr) {
     if (wstr.empty()) return std::string();
-    int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
-    std::string strTo(size_needed, 0);
-    WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], size_needed, NULL, NULL);
+    int size_needed = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, NULL, 0, NULL, NULL);
+    if (size_needed <= 1) return std::string();
+    // ä¸åŒ…å«æœ«å°¾çš„ NUL å­—èŠ‚
+    std::string strTo(size_needed - 1, 0);
+    WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, &strTo[0], size_needed - 1, NULL, NULL);
     return strTo;
 }
 
@@ -59,21 +62,21 @@ void AppLog(const std::string& msg) {
 }
 
 // ==========================================
-// ÒµÎñÂß¼­ÊµÏÖ
+// Òµï¿½ï¿½ï¿½ß¼ï¿½Êµï¿½ï¿½
 // ==========================================
 void GetUserInfo() {
     wchar_t username[256];
     DWORD len = 256;
     if (GetUserNameW(username, &len)) {
         std::string u = WStringToString(username);
-        sprintf_s(g_userBuffer, "µ±Ç°ÓÃ»§: %s", u.c_str());
+        sprintf_s(g_userBuffer, "å½“å‰ç”¨æˆ·: %s", u.c_str());
     }
 }
 
 void ScanUSBDevices() {
     g_usbDevices.clear();
     g_selectedDeviceIndex = -1;
-    HDEVINFO hDevInfo = SetupDiGetClassDevs(NULL, L"USB", NULL, DIGCF_PRESENT | DIGCF_ALLCLASSES);
+    HDEVINFO hDevInfo = SetupDiGetClassDevsW(NULL, L"USB", NULL, DIGCF_PRESENT | DIGCF_ALLCLASSES);
     if (hDevInfo == INVALID_HANDLE_VALUE) return;
 
     SP_DEVINFO_DATA DeviceInfoData;
@@ -84,14 +87,14 @@ void ScanUSBDevices() {
         wchar_t buffer[1024];
         DWORD buffersize = 0;
 
-        if (!SetupDiGetDeviceRegistryProperty(hDevInfo, &DeviceInfoData, SPDRP_FRIENDLYNAME, &DataT, (PBYTE)buffer, sizeof(buffer), &buffersize))
-            SetupDiGetDeviceRegistryProperty(hDevInfo, &DeviceInfoData, SPDRP_DEVICEDESC, &DataT, (PBYTE)buffer, sizeof(buffer), &buffersize);
+        if (!SetupDiGetDeviceRegistryPropertyW(hDevInfo, &DeviceInfoData, SPDRP_FRIENDLYNAME, &DataT, (PBYTE)buffer, sizeof(buffer), &buffersize))
+            SetupDiGetDeviceRegistryPropertyW(hDevInfo, &DeviceInfoData, SPDRP_DEVICEDESC, &DataT, (PBYTE)buffer, sizeof(buffer), &buffersize);
         std::wstring name = buffer;
 
-        SetupDiGetDeviceRegistryProperty(hDevInfo, &DeviceInfoData, SPDRP_HARDWAREID, &DataT, (PBYTE)buffer, sizeof(buffer), &buffersize);
+        SetupDiGetDeviceRegistryPropertyW(hDevInfo, &DeviceInfoData, SPDRP_HARDWAREID, &DataT, (PBYTE)buffer, sizeof(buffer), &buffersize);
         std::wstring hwid = buffer;
 
-        SetupDiGetDeviceRegistryProperty(hDevInfo, &DeviceInfoData, SPDRP_MFG, &DataT, (PBYTE)buffer, sizeof(buffer), &buffersize);
+        SetupDiGetDeviceRegistryPropertyW(hDevInfo, &DeviceInfoData, SPDRP_MFG, &DataT, (PBYTE)buffer, sizeof(buffer), &buffersize);
         std::wstring mfg = buffer;
 
         USBDevice dev;
@@ -100,7 +103,7 @@ void ScanUSBDevices() {
         dev.vendor = WStringToString(mfg);
 
         bool is30 = false;
-        // ¼òµ¥µÄ¹Ø¼ü´ÊÆ¥Åä
+        // ï¿½òµ¥µÄ¹Ø¼ï¿½ï¿½ï¿½Æ¥ï¿½ï¿½
         if (dev.hwid.find("ROOT_HUB30") != std::string::npos) is30 = true;
         if (dev.hwid.find("USB 3.0") != std::string::npos) is30 = true;
         if (dev.name.find("USB 3.0") != std::string::npos) is30 = true;
@@ -112,7 +115,7 @@ void ScanUSBDevices() {
         g_usbDevices.push_back(dev);
     }
     SetupDiDestroyDeviceInfoList(hDevInfo);
-    AppLog("USB Éè±¸ÁĞ±íÒÑË¢ĞÂ¡£");
+    AppLog("USB è®¾å¤‡åˆ—è¡¨å·²åˆ·æ–°ï¼");
 }
 
 void RefreshDrives() {
@@ -131,8 +134,18 @@ void RefreshDrives() {
     }
     if (!g_logicalDrives.empty()) g_selectedDriveIdx = 0;
 
-    if (g_logicalDrives.empty()) AppLog("Î´¼ì²âµ½¿ÉÒÆ¶¯´ÅÅÌ¡£");
-    else AppLog("¼ì²âµ½ UÅÌ¹ÒÔØ¡£");
+    if (g_logicalDrives.empty()) AppLog("æœªæ£€æµ‹åˆ°å¯ç§»åŠ¨è®¾å¤‡ã€‚");
+    else AppLog("æ£€æµ‹åˆ° U ç›˜ã€‚");
+
+    // å¦‚æœ UI æ­£åœ¨æ˜¾ç¤ºå½“å‰ U ç›˜ç›®å½•ï¼Œå°è¯•åˆ·æ–°è¯¥ç›®å½•çš„åˆ—è¡¨ï¼ˆä¿æŒåœ¨å½“å‰ç›®å½•ï¼‰
+    if (g_showDriveFiles) {
+        if (!g_currentPath.empty()) {
+            ListFilesInDrive(g_currentPath);
+        }
+        else if (g_selectedDriveIdx >= 0 && g_selectedDriveIdx < g_logicalDrives.size()) {
+            ListFilesInDrive(g_logicalDrives[g_selectedDriveIdx]);
+        }
+    }
 }
 
 void WriteTest() {
@@ -142,45 +155,45 @@ void WriteTest() {
     if (out.is_open()) {
         out << "ImGui Interface Test.\n" << g_userBuffer;
         out.close();
-        AppLog("Ğ´ÈëÎÄ¼ş³É¹¦: " + path);
+        AppLog("å†™å…¥æ–‡ä»¶æˆåŠŸ: " + path);
     }
     else {
-        AppLog("Ğ´ÈëÊ§°Ü£¡");
+        AppLog("å†™å…¥å¤±è´¥ã€‚");
     }
 }
 
 void RunDiskBenchmark() {
     if (g_selectedDriveIdx < 0 || g_logicalDrives.empty()) {
-        g_lastSpeedTest.message = "´íÎó: Î´Ñ¡Ôñ U ÅÌ";
+        g_lastSpeedTest.message = "é”™è¯¯: æœªé€‰æ‹© U ç›˜";
         return;
     }
 
     std::string drive = g_logicalDrives[g_selectedDriveIdx];
     std::string testFile = drive + "speed_test.tmp";
-    const size_t DATA_SIZE = 10 * 1024 * 1024; // ²âÊÔ 10MB Êı¾İ
+    const size_t DATA_SIZE = 10 * 1024 * 1024; // ï¿½ï¿½ï¿½ï¿½ 10MB ï¿½ï¿½ï¿½ï¿½
     char* buffer = new char[DATA_SIZE];
 
-    // Ìî³äËæ»úÊı¾İ·ÀÖ¹±»Ñ¹Ëõ
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ·ï¿½Ö¹ï¿½ï¿½Ñ¹ï¿½ï¿½
     for (size_t i = 0; i < DATA_SIZE; i++) buffer[i] = (char)(i % 256);
 
-    AppLog("¿ªÊ¼²âËÙ (Êı¾İÁ¿: 10MB)...");
-    g_lastSpeedTest.message = "ÕıÔÚĞ´Èë...";
+    AppLog("å¼€å§‹åŸºå‡†æµ‹è¯• (å¤§å°: 10MB)...");
+    g_lastSpeedTest.message = "æ­£åœ¨å†™å…¥...";
 
-    // 1. Ğ´Èë²âÊÔ
+    // 1. Ğ´ï¿½ï¿½ï¿½ï¿½ï¿½
     LARGE_INTEGER frequency, start, end;
     QueryPerformanceFrequency(&frequency);
 
     QueryPerformanceCounter(&start);
     std::ofstream out(testFile, std::ios::binary);
     out.write(buffer, DATA_SIZE);
-    out.close(); // ¹Ø±ÕÒÔÈ·±£ flush
+    out.close(); // ï¿½Ø±ï¿½ï¿½ï¿½È·ï¿½ï¿½ flush
     QueryPerformanceCounter(&end);
 
     double timeWrite = (double)(end.QuadPart - start.QuadPart) / frequency.QuadPart;
     double speedWrite = (DATA_SIZE / 1024.0 / 1024.0) / timeWrite;
 
-    // 2. ¶ÁÈ¡²âÊÔ
-    g_lastSpeedTest.message = "ÕıÔÚ¶ÁÈ¡...";
+    // 2. ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½
+    g_lastSpeedTest.message = "æ­£åœ¨è¯»å–...";
     QueryPerformanceCounter(&start);
     std::ifstream in(testFile, std::ios::binary);
     in.read(buffer, DATA_SIZE);
@@ -190,7 +203,7 @@ void RunDiskBenchmark() {
     double timeRead = (double)(end.QuadPart - start.QuadPart) / frequency.QuadPart;
     double speedRead = (DATA_SIZE / 1024.0 / 1024.0) / timeRead;
 
-    // 3. ÇåÀíÓë½á¹û
+    // 3. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     DeleteFileA(testFile.c_str());
     delete[] buffer;
 
@@ -199,92 +212,92 @@ void RunDiskBenchmark() {
     g_lastSpeedTest.readSpeedMBps = speedRead;
 
     char msg[128];
-    sprintf_s(msg, "Ğ´Èë: %.1f MB/s | ¶ÁÈ¡: %.1f MB/s", speedWrite, speedRead);
+    sprintf_s(msg, "Ğ´ï¿½ï¿½: %.1f MB/s | ï¿½ï¿½È¡: %.1f MB/s", speedWrite, speedRead);
     g_lastSpeedTest.message = msg;
-    AppLog("²âËÙÍê³É: " + std::string(msg));
+    AppLog(std::string("åŸºå‡†æµ‹è¯•ç»“æœ: ") + std::string(msg));
 }
 
 void UpdateRealTimeMonitor() {
-    // 1. Èç¹ûÃ»¿ª¿ª¹Ø£¬»òÕßÃ»ÓĞÑ¡Éè±¸£¬Ö±½ÓÍË³ö
+    // 1. ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½Ø£ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½Ñ¡ï¿½è±¸ï¿½ï¿½Ö±ï¿½ï¿½ï¿½Ë³ï¿½
     if (!g_isMonitorRunning) return;
     if (g_selectedDriveIdx < 0 || g_logicalDrives.empty()) {
-        g_isMonitorRunning = false; // Ç¿ÖÆÍ£Ö¹
-        AppLog("¼à¿ØÍ£Ö¹£ºÉè±¸ÎŞĞ§");
+        g_isMonitorRunning = false; // åœæ­¢
+        AppLog("ç›‘æµ‹å·²åœæ­¢ï¼šè®¾å¤‡ä¸å¯ç”¨");
         return;
     }
 
-    // 2. ¼ì²éÊ±¼ä¼ä¸ô (Ã¿ 1000ms Ö´ĞĞÒ»´Î)
+    // 2. ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ (Ã¿ 1000ms Ö´ï¿½ï¿½Ò»ï¿½ï¿½)
     DWORD currentTick = GetTickCount();
     if (currentTick - g_lastMonitorTick < 1000) {
-        return; // Ê±¼äÃ»µ½£¬²»Ö´ĞĞ
+        return; // Ê±ï¿½ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ï¿½
     }
-    g_lastMonitorTick = currentTick; // ¸üĞÂÊ±¼ä´Á
+    g_lastMonitorTick = currentTick; // ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½
 
-    // 3. Ö´ĞĞÒ»´ÎÎ¢ĞÍ²âËÙ (Ö»²âĞ´Èë£¬ÎªÁË¿ìËÙÏìÓ¦)
-    // ÎªÊ²Ã´Ö»²â 512KB£¿ÒòÎªÈç¹û²â 10MB£¬USB 2.0ĞèÒªĞ´2Ãë£¬½çÃæ»á¿¨ËÀ¡£
+    // 3. Ö´ï¿½ï¿½Ò»ï¿½ï¿½Î¢ï¿½Í²ï¿½ï¿½ï¿½ (Ö»ï¿½ï¿½Ğ´ï¿½ë£¬Îªï¿½Ë¿ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦)
+    // ÎªÊ²Ã´Ö»ï¿½ï¿½ 512KBï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ 10MBï¿½ï¿½USB 2.0ï¿½ï¿½ÒªĞ´2ï¿½ë£¬ï¿½ï¿½ï¿½ï¿½á¿¨ï¿½ï¿½ï¿½ï¿½
     std::string drive = g_logicalDrives[g_selectedDriveIdx];
     std::string testFile = drive + "monitor.tmp";
     const size_t CHUNK_SIZE = 512 * 1024; // 512KB
     char* buffer = new char[CHUNK_SIZE];
 
-    // ¸üĞÂÉè±¸Ãû³ÆÓÃÓÚÏÔÊ¾
-    g_monitorDevName = drive + " (ÊµÊ±)";
+    // ï¿½ï¿½ï¿½ï¿½ï¿½è±¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾
+    g_monitorDevName = drive + " (å®æ—¶)";
 
     LARGE_INTEGER freq, start, end;
     QueryPerformanceFrequency(&freq);
     QueryPerformanceCounter(&start);
 
-    // Ğ´ÎÄ¼ş
+    // Ğ´ï¿½Ä¼ï¿½
     std::ofstream out(testFile, std::ios::binary);
     out.write(buffer, CHUNK_SIZE);
     out.close();
 
     QueryPerformanceCounter(&end);
 
-    // ËãËÙ¶È
+    // ï¿½ï¿½ï¿½Ù¶ï¿½
     double timeSec = (double)(end.QuadPart - start.QuadPart) / freq.QuadPart;
     float speedMB = (float)((CHUNK_SIZE / 1024.0 / 1024.0) / timeSec);
 
-    // 4. ¸üĞÂÍ¼±íÊı×é (»·ĞÎ»º³å)
+    // 4. ï¿½ï¿½ï¿½ï¿½Í¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½Î»ï¿½ï¿½ï¿½)
     g_speedHistory[g_historyOffset] = speedMB;
-    g_historyOffset = (g_historyOffset + 1) % 90; // ¹ö¶¯
+    g_historyOffset = (g_historyOffset + 1) % 90; // ï¿½ï¿½ï¿½ï¿½
 
-    // 5. ÇåÀí
+    // 5. ï¿½ï¿½ï¿½ï¿½
     DeleteFileA(testFile.c_str());
     delete[] buffer;
 }
 
 
-// ¡¾ĞÂÔö¡¿¿½±´ÎÄ¼ş²âÊÔ
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½
 void CopyFileToUSB() {
     if (g_selectedDriveIdx < 0 || g_logicalDrives.empty()) {
-        AppLog("´íÎó£ºÎ´Ñ¡ÔñÄ¿±ê U ÅÌ");
+        AppLog("ï¿½ï¿½ï¿½ï¿½Î´Ñ¡ï¿½ï¿½Ä¿ï¿½ï¿½ U ï¿½ï¿½");
         return;
     }
 
-    // 1. »ñÈ¡µ±Ç°³ÌĞò×Ô¼ºµÄÍêÕûÂ·¾¶ (×÷ÎªÔ´ÎÄ¼ş)
+    // 1. ï¿½ï¿½È¡ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ (ï¿½ï¿½ÎªÔ´ï¿½Ä¼ï¿½)
     wchar_t selfPath[MAX_PATH];
     GetModuleFileNameW(NULL, selfPath, MAX_PATH);
 
-    // 2. ¹¹ÔìÄ¿±êÂ·¾¶
+    // 2. ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½Â·ï¿½ï¿½
     std::string drive = g_logicalDrives[g_selectedDriveIdx];
-    // Ä¿±êÎÄ¼şÃû½Ğ copy_test_file.exe
+    // Ä¿ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ copy_test_file.exe
     std::string destPathStr = drive + "copy_test_file.exe";
 
-    // ĞèÒª°Ñ destPathStr ×ª»Ø wstring ´«¸ø API
+    // ï¿½ï¿½Òªï¿½ï¿½ destPathStr ×ªï¿½ï¿½ wstring ï¿½ï¿½ï¿½ï¿½ API
     int len = MultiByteToWideChar(CP_UTF8, 0, destPathStr.c_str(), -1, NULL, 0);
     wchar_t* wDestPath = new wchar_t[len];
     MultiByteToWideChar(CP_UTF8, 0, destPathStr.c_str(), -1, wDestPath, len);
 
-    AppLog("ÕıÔÚ¿½±´ÎÄ¼ş...");
+    AppLog("æ‹·è´å½“å‰å¯æ‰§è¡Œæ–‡ä»¶...");
 
-    // 3. Ö´ĞĞ¿½±´
-    // FALSE ±íÊ¾Èç¹ûÎÄ¼ş´æÔÚÔò¸²¸Ç
+    // 3. Ö´ï¿½Ğ¿ï¿½ï¿½ï¿½
+    // FALSE ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ò¸²¸ï¿½
     if (CopyFileW(selfPath, wDestPath, FALSE)) {
-        AppLog("¿½±´³É¹¦: " + destPathStr);
+        AppLog("æ‹·è´æˆåŠŸ: " + destPathStr);
     }
     else {
-        AppLog("¿½±´Ê§°Ü£¬´íÎóÂë: " + std::to_string(GetLastError()));
+        AppLog("æ‹·è´å¤±è´¥ï¼Œé”™è¯¯ç : " + std::to_string(GetLastError()));
     }
 
     delete[] wDestPath;
@@ -295,19 +308,19 @@ void DeleteFileFromUSB() {
 
     std::string drive = g_logicalDrives[g_selectedDriveIdx];
 
-    // ¶¨ÒåÎÒÃÇÒªÇåÀíµÄÎÄ¼şÁĞ±í
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½Ğ±ï¿½
     std::vector<std::string> filesToDelete = {
-        "imgui_test.txt",       // Ğ´Èë²âÊÔ²úÉú
-        "copy_test_file.exe",   // ¿½±´²âÊÔ²úÉú
-        "monitor.tmp",          // ¼à¿Ø²úÉú
-        "speed_test.tmp"        // ²âËÙ²úÉú
+        "imgui_test.txt",       // Ğ´ï¿½ï¿½ï¿½ï¿½Ô²ï¿½ï¿½ï¿½
+        "copy_test_file.exe",   // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô²ï¿½ï¿½ï¿½
+        "monitor.tmp",          // ï¿½ï¿½Ø²ï¿½ï¿½ï¿½
+        "speed_test.tmp"        // ï¿½ï¿½ï¿½Ù²ï¿½ï¿½ï¿½
     };
 
     int successCount = 0;
     for (const auto& fname : filesToDelete) {
         std::string fullPath = drive + fname;
 
-        // ×ª¿í×Ö·û
+        // ×ªï¿½ï¿½ï¿½Ö·ï¿½
         int len = MultiByteToWideChar(CP_UTF8, 0, fullPath.c_str(), -1, NULL, 0);
         wchar_t* wPath = new wchar_t[len];
         MultiByteToWideChar(CP_UTF8, 0, fullPath.c_str(), -1, wPath, len);
@@ -319,10 +332,10 @@ void DeleteFileFromUSB() {
     }
 
     if (successCount > 0) {
-        AppLog("ÇåÀíÍê³É£¬É¾³ıÁË " + std::to_string(successCount) + " ¸ö²âÊÔÎÄ¼ş¡£");
+        AppLog("å·²åˆ é™¤ï¼Œå…±åˆ é™¤ " + std::to_string(successCount) + " ä¸ªæ–‡ä»¶");
     }
     else {
-        AppLog("Î´·¢ÏÖ²âÊÔÎÄ¼ş»òÉ¾³ıÊ§°Ü¡£");
+        AppLog("æœªæ‰¾åˆ°å¯åˆ é™¤çš„æµ‹è¯•æ–‡ä»¶");
     }
 }
 
@@ -330,7 +343,7 @@ std::string GetDriveLabel(const std::string& driveLetter) {
     char volumeName[MAX_PATH + 1] = { 0 };
     char fileSystemName[MAX_PATH + 1] = { 0 };
 
-    // driveLetter ¸ñÊ½±ØĞëÊÇ "F:\\"
+    // driveLetter ï¿½ï¿½Ê½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ "F:\\"
     if (GetVolumeInformationA(
         driveLetter.c_str(),
         volumeName,
@@ -344,4 +357,190 @@ std::string GetDriveLabel(const std::string& driveLetter) {
         return label;
     }
     return "Unknown Device";
+}
+
+// ==========================================
+// æ–‡ä»¶åˆ—è¡¨ / åˆ é™¤ / ä»æœ¬åœ°æ‹·è´åˆ°Uç›˜
+// ==========================================
+std::vector<std::string> g_currentDriveFiles;
+int g_selectedFileIndex = -1;
+bool g_showDriveFiles = false;
+std::string g_currentPath = "";
+std::vector<std::string> g_pathStack;
+
+void ListFilesInDrive(const std::string& drive) {
+    g_currentDriveFiles.clear();
+    g_selectedFileIndex = -1;
+    if (drive.empty()) return;
+
+    std::string normalized = drive;
+    if (normalized.back() != '\\') normalized += "\\";
+    g_currentPath = normalized;
+    AppLog(std::string("åˆ—å‡ºç›®å½•: ") + g_currentPath);
+
+    // ä½¿ç”¨å®½å­—ç¬¦ API ä»¥æ­£ç¡®è¯»å–åŒ…å«é ASCII çš„æ–‡ä»¶å
+    int wlen = MultiByteToWideChar(CP_UTF8, 0, normalized.c_str(), -1, NULL, 0);
+    if (wlen <= 0) return;
+    std::vector<wchar_t> wbuf(wlen);
+    MultiByteToWideChar(CP_UTF8, 0, normalized.c_str(), -1, wbuf.data(), wlen);
+    std::wstring wsearch(wbuf.data());
+    std::wstring wsearchPath = wsearch + L"*";
+
+    WIN32_FIND_DATAW findDataW;
+    HANDLE hFind = FindFirstFileW(wsearchPath.c_str(), &findDataW);
+    if (hFind == INVALID_HANDLE_VALUE) {
+        AppLog(std::string("ListFilesInDrive FindFirstFileW failed, error=") + std::to_string(GetLastError()));
+        return;
+    }
+    do {
+        std::wstring wname = findDataW.cFileName;
+        if (wname == L"." || wname == L"..") continue;
+        // è½¬ä¸º UTF-8ï¼ˆé¿å…åœ¨ std::string ä¸­ç•™ä¸‹ NUL å­—èŠ‚ï¼‰
+        int len = WideCharToMultiByte(CP_UTF8, 0, wname.c_str(), -1, NULL, 0, NULL, NULL);
+        if (len <= 1) continue;
+        std::string name(len - 1, '\0');
+        WideCharToMultiByte(CP_UTF8, 0, wname.c_str(), -1, &name[0], len - 1, NULL, NULL);
+        // æ ‡æ³¨ç›®å½•åæœ«å°¾åŠ  '\\' ä»¥è¡¨ç¤ºç›®å½•
+        if (findDataW.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) name.push_back('\\');
+        g_currentDriveFiles.push_back(name);
+    } while (FindNextFileW(hFind, &findDataW));
+    FindClose(hFind);
+}
+
+// è¿›å…¥ç›®å½•ï¼ˆç›®å½•åå¯å¸¦æˆ–ä¸å¸¦æœ«å°¾ '\\'ï¼‰ï¼Œè¿”å›æ˜¯å¦æˆåŠŸ
+bool EnterDirectory(const std::string& dirname) {
+    if (dirname.empty() || g_currentPath.empty()) return false;
+    std::string name = dirname;
+    if (!name.empty() && name.back() == '\\') name.pop_back();
+
+    // æ„é€ ä¸‹ä¸€çº§è·¯å¾„ï¼Œç¡®ä¿åªæœ‰ä¸€ä¸ªæœ«å°¾ '\\'
+    std::string base = g_currentPath;
+    if (!base.empty() && base.back() != '\\') base += "\\";
+    std::string next = base + name + "\\";
+
+    // å°† next è½¬ä¸ºå®½å­—ç¬¦å¹¶æ£€æŸ¥æ˜¯å¦ä¸ºç›®å½•
+    int wlen = MultiByteToWideChar(CP_UTF8, 0, next.c_str(), -1, NULL, 0);
+    if (wlen <= 0) {
+        AppLog(std::string("EnterDirectory: è·¯å¾„è½¬æ¢å¤±è´¥: ") + next);
+        return false;
+    }
+    std::vector<wchar_t> wbuf(wlen);
+    MultiByteToWideChar(CP_UTF8, 0, next.c_str(), -1, wbuf.data(), wlen);
+    DWORD attr = GetFileAttributesW(wbuf.data());
+    if (attr == INVALID_FILE_ATTRIBUTES || !(attr & FILE_ATTRIBUTE_DIRECTORY)) {
+        AppLog(std::string("EnterDirectory: ç›®æ ‡ä¸æ˜¯ç›®å½•æˆ–ä¸å­˜åœ¨: ") + next + " err=" + std::to_string(GetLastError()));
+        return false;
+    }
+
+    // push current path å¹¶è¿›å…¥
+    g_pathStack.push_back(g_currentPath);
+    AppLog(std::string("è¿›å…¥ç›®å½•: ") + next);
+    ListFilesInDrive(next);
+    return true;
+}
+
+// è¿”å›ä¸Šä¸€çº§ç›®å½•ï¼›å¦‚æœå·²åˆ°ç›˜æ ¹åˆ™å…³é—­è§†å›¾å¹¶è¿”å› false
+bool GoUpDirectory() {
+    if (g_pathStack.empty()) {
+        g_showDriveFiles = false;
+        g_currentDriveFiles.clear();
+        g_currentPath.clear();
+        g_selectedFileIndex = -1;
+        return false;
+    }
+    std::string prev = g_pathStack.back();
+    g_pathStack.pop_back();
+    ListFilesInDrive(prev);
+    return true;
+}
+
+// å°† U ç›˜ä¸Šçš„æ–‡ä»¶å¤åˆ¶åˆ°æœ¬åœ°ï¼ˆå¼¹å‡ºä¿å­˜å¯¹è¯æ¡†ï¼‰ï¼Œè¿”å›æ˜¯å¦æˆåŠŸ
+bool CopyFileFromDriveToPC(const std::string& srcRelative) {
+    if (g_currentPath.empty() || srcRelative.empty()) return false;
+    std::string src = g_currentPath + srcRelative;
+    // è½¬ä¸º wide
+    int srcLen = MultiByteToWideChar(CP_UTF8, 0, src.c_str(), -1, NULL, 0);
+    std::wstring wsrc(srcLen, L'\0');
+    MultiByteToWideChar(CP_UTF8, 0, src.c_str(), -1, &wsrc[0], srcLen);
+
+    // é»˜è®¤ä¿å­˜æ–‡ä»¶å
+    size_t pos = srcRelative.find_last_of("/\\");
+    std::string defaultName = (pos == std::string::npos) ? srcRelative : srcRelative.substr(pos + 1);
+    int dlen = MultiByteToWideChar(CP_UTF8, 0, defaultName.c_str(), -1, NULL, 0);
+    std::wstring wDefault(dlen, L'\0');
+    MultiByteToWideChar(CP_UTF8, 0, defaultName.c_str(), -1, &wDefault[0], dlen);
+
+    wchar_t saveFile[MAX_PATH] = { 0 };
+    wcscpy_s(saveFile, wDefault.c_str());
+
+    OPENFILENAMEW ofn;
+    ZeroMemory(&ofn, sizeof(ofn));
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = NULL;
+    ofn.lpstrFile = saveFile;
+    ofn.nMaxFile = MAX_PATH;
+    ofn.lpstrFilter = L"All\0*.*\0\0";
+    ofn.Flags = OFN_OVERWRITEPROMPT;
+    if (!GetSaveFileNameW(&ofn)) return false;
+
+    if (CopyFileW(wsrc.c_str(), saveFile, FALSE)) {
+        AppLog("æ‹·è´åˆ°æœ¬åœ°æˆåŠŸ");
+        return true;
+    }
+    else {
+        AppLog("æ‹·è´åˆ°æœ¬åœ°å¤±è´¥ï¼Œé”™è¯¯ç : " + std::to_string(GetLastError()));
+        return false;
+    }
+}
+
+bool DeleteFileOnDrive(const std::string& fullPath) {
+    // fullPath æ˜¯å®Œæ•´è·¯å¾„ï¼Œå¦‚ "F:\\test.txt" æˆ–ç›®å½•
+    // å°è¯•åˆ é™¤æ–‡ä»¶
+    if (DeleteFileA(fullPath.c_str())) return true;
+    // å¦‚æœæ˜¯ç›®å½•ï¼Œå°è¯• RemoveDirectoryA
+    if (RemoveDirectoryA(fullPath.c_str())) return true;
+    return false;
+}
+
+bool CopyLocalFileToDriveWithDialog(const std::string& drive) {
+    // æ‰“å¼€æ–‡ä»¶é€‰æ‹©å¯¹è¯æ¡†ï¼ˆå®½å­—ç¬¦ï¼‰
+    OPENFILENAMEW ofn;
+    wchar_t szFile[MAX_PATH] = { 0 };
+    ZeroMemory(&ofn, sizeof(ofn));
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = NULL;
+    ofn.lpstrFile = szFile;
+    ofn.nMaxFile = MAX_PATH;
+    ofn.lpstrFilter = L"All\0*.*\0\0";
+    ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
+    if (!GetOpenFileNameW(&ofn)) return false;
+
+    // æºè·¯å¾„
+    std::wstring wsrc = szFile;
+    // ç›®æ ‡è·¯å¾„é©±åŠ¨å™¨å¿…é¡»ä»¥ \ ç»“å°¾
+    std::string destDir = drive; // ANSI
+    // æå–æºæ–‡ä»¶åä¸º UTF-8
+    int len = WideCharToMultiByte(CP_UTF8, 0, wsrc.c_str(), -1, NULL, 0, NULL, NULL);
+    if (len <= 1) return false;
+    std::string srcUtf8(len - 1, '\0');
+    WideCharToMultiByte(CP_UTF8, 0, wsrc.c_str(), -1, &srcUtf8[0], len - 1, NULL, NULL);
+    // è·å–æ–‡ä»¶åéƒ¨åˆ†ï¼ˆä»æœ€åçš„ '\\'ï¼‰
+    size_t pos = srcUtf8.find_last_of("/\\");
+    std::string fileName = (pos == std::string::npos) ? srcUtf8 : srcUtf8.substr(pos + 1);
+
+    std::string destPath = destDir + fileName;
+
+    // è½¬æ¢ä¸ºå®½å­—ç¬¦ç”¨äº CopyFileW
+    int destLen = MultiByteToWideChar(CP_UTF8, 0, destPath.c_str(), -1, NULL, 0);
+    std::wstring wDest(destLen, L'\0');
+    MultiByteToWideChar(CP_UTF8, 0, destPath.c_str(), -1, &wDest[0], destLen);
+
+    if (CopyFileW(wsrc.c_str(), wDest.c_str(), FALSE)) {
+        AppLog("æ‹·è´æˆåŠŸ: " + destPath);
+        return true;
+    }
+    else {
+        AppLog("æ‹·è´å¤±è´¥ï¼Œé”™è¯¯ç : " + std::to_string(GetLastError()));
+        return false;
+    }
 }

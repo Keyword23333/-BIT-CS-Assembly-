@@ -23,7 +23,12 @@ USB 总线及挂载设备测试实验。通过读取、检测、使用计算机�
 
 #### 2.2 软件与开发环境
 
-- **集成开发环境**：Microsoft Visual Studio
+- **集成开发环境**：**Microsoft Visual Studio** or **vscode**
+```bash
+# vscode编译命令，注意修改路径
+g++ -fdiagnostics-color=always -g -finput-charset=UTF-8 -fexec-charset=UTF-8 D:\Code\C\Lab2\USB_Lab\main.cpp D:\Code\C\Lab2\USB_Lab\GuiLayer.cpp D:\Code\C\Lab2\USB_Lab\RenderSystem.cpp D:\Code\C\Lab2\USB_Lab\USBCore.cpp D:\Code\C\Lab2\USB_Lab\imgui\imgui.cpp D:\Code\C\Lab2\USB_Lab\imgui\imgui_draw.cpp D:\Code\C\La D:\Code\C\Lab2\USB_Lab\imgui\imgui_widgets.cpp D:\Code\C\Lab2\USB_Lab\imgui\imgui_impl_dx11.cpp D:\Code\C\Lab2\USB_Lab\imgui\imgui_impl_win32.cpp -ID:\Code\C\Lab2\USB_Lab -ID:\Code\C\Lab2\USB_Lab\imgui -o D:\Code\C\Lab2\USB_Lab\main.exe -ld3d11 -ld3dcompiler -ldxgi -lsetupapi -lgdi32 -luser32 -lole32 -luuid -ldwmapi -lcomdlg32
+```
+
 - **编程语言**：C++
 - **编译器**：MSVC（Visual C++）
 - **图形接口**：DirectX 11
@@ -47,7 +52,7 @@ USB 总线及挂载设备测试实验。通过读取、检测、使用计算机�
 - **U盘挂载显示**：有一个下拉框可以显示目前的U盘挂载情况。
 - **U盘测速**：在下拉框选中目标U盘之后可以点击“开始测速按钮”，就可以看见测速折线图，实时显示当前的数据传输速度。
 - **USB监测**：表盘上会有一个表格，显示所有的USB的厂商、设备名、ID和协议信息。
-- **写/删文件**:
+- **写/删文件**:选择显示u盘文件，会出现u盘列表，能增、删、上传、copy其中文件。
 
 ### 4 设计方案
 

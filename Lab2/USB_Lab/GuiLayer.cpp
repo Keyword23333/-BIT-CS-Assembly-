@@ -2,7 +2,7 @@
 #include "GuiLayer.h"
 #include "Common.h"
 #include "USBCore.h"
-#include "RenderSystem.h" // ĞèÒª D3D Éè±¸Ö¸Õë
+#include "RenderSystem.h" // éœ€è¦ Direct3D è®¾å¤‡å£°æ˜
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_win32.h"
 #include "imgui/imgui_impl_dx11.h"
@@ -14,7 +14,7 @@ void InitGui(HWND hwnd) {
 
     ImGui::StyleColorsDark();
 
-    // ¼ÓÔØ×ÖÌå
+    // åŠ è½½å­—ä½“
     ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\msyh.ttc", 18.0f, NULL, io.Fonts->GetGlyphRangesChineseFull());
 
     ImGui_ImplWin32_Init(hwnd);
@@ -28,7 +28,7 @@ void ShutdownGui() {
 }
 
 void RenderGuiFrame() {
-    // Ã¿Ò»Ö¡µ÷ÓÃ¼à¿ØÂß¼­
+    // æ¯å¸§æ›´æ–°çš„é€»è¾‘
     UpdateRealTimeMonitor();
 
     ImGui_ImplDX11_NewFrame();
@@ -40,36 +40,41 @@ void RenderGuiFrame() {
     ImGui::SetNextWindowSize(io.DisplaySize);
     ImGui::Begin("MainPanel", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
 
-    // --- ±êÌâÀ¸ ---
+    // --- æ ‡é¢˜ ---
     ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "USB BUS INTERFACE LAB");
     ImGui::SameLine();
     ImGui::TextDisabled("| %s", g_userBuffer);
     ImGui::Separator();
 
     // =======================================================
-    // [²¼¾Ö¿ªÊ¼]
+    // [å·¦ä¾§é¢æ¿]
     // =======================================================
     ImGui::Columns(2, "MainColumns");
-    ImGui::SetColumnWidth(0, 320); // ×ó²à¹Ì¶¨¿í¶È
+    ImGui::SetColumnWidth(0, 320); // ï¿½ï¿½ï¿½Ì¶ï¿½ï¿½ï¿½ï¿½ï¿½
 
-    // ¡¾Ä§·¨´úÂë 1¡¿£º¼ÇÂ¼·ÖÀ¸ÆğÊ¼µÄ Y Öá¸ß¶È
+    // ï¿½ï¿½Ä§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 1ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ Y ï¿½ï¿½ß¶ï¿½
     float start_y = ImGui::GetCursorPosY();
 
     // =======================================================
-    // [×ó²àÁĞÄÚÈİ]£º°´Å¥ + ÈÕÖ¾
+    // [åŠŸèƒ½æŒ‰é’®] æŒ‰é’® + æ—¥å¿—
     // =======================================================
 
-    // 1. Âß¼­´æ´¢Éè±¸¿ØÖÆ
-    ImGui::Text("Âß¼­´æ´¢Éè±¸¿ØÖÆ");
-    if (ImGui::Button("Ë¢ĞÂ´ÅÅÌ", ImVec2(120, 30))) RefreshDrives();
+    // 1. å¯ç§»åŠ¨å­˜å‚¨è®¾å¤‡
+    ImGui::Text("å¯ç§»åŠ¨å­˜å‚¨è®¾å¤‡");
+    if (ImGui::Button("åˆ·æ–°åˆ—è¡¨", ImVec2(120, 26))) {
+        // åŒæ—¶åˆ·æ–° USB è®¾å¤‡ä¿¡æ¯å’Œé€»è¾‘é©±åŠ¨å™¨åˆ—è¡¨
+        ScanUSBDevices();
+        RefreshDrives();
+        AppLog("å·²åˆ·æ–°è®¾å¤‡ä¸é©±åŠ¨å™¨åˆ—è¡¨");
+    }
 
     const char* preview = (g_selectedDriveIdx >= 0 && g_selectedDriveIdx < g_logicalDrives.size())
-        ? g_logicalDrives[g_selectedDriveIdx].c_str() : "Î´Ñ¡Ôñ";
-    if (ImGui::BeginCombo("Ä¿±êÅÌ·û", preview)) {
+        ? g_logicalDrives[g_selectedDriveIdx].c_str() : "æœªé€‰æ‹©";
+    if (ImGui::BeginCombo("ç›®æ ‡ç›˜ç¬¦", preview)) {
         for (int i = 0; i < g_logicalDrives.size(); i++) {
             bool is_selected = (g_selectedDriveIdx == i);
 
-            // ÏÔÊ¾ÅÌ·û + ¾í±ê (ÀıÈç F:\ [SanDisk])
+            // ï¿½ï¿½Ê¾ï¿½Ì·ï¿½ + ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ F:\ [SanDisk])
             std::string label = GetDriveLabel(g_logicalDrives[i]);
             std::string itemText = g_logicalDrives[i] + " [" + label + "]";
 
@@ -81,23 +86,29 @@ void RenderGuiFrame() {
     }
     ImGui::Dummy(ImVec2(0, 10));
 
-    // 2. ÎÄ¼ş²Ù×÷²âÊÔ
-    ImGui::Text("ÎÄ¼ş²Ù×÷²âÊÔ");
-    if (ImGui::Button("Ğ´Èë²âÊÔÎÄ¼ş", ImVec2(280, 30))) WriteTest();
-    if (ImGui::Button("Ä£Äâ¿½±´ÎÄ¼ş", ImVec2(280, 30))) CopyFileToUSB();
-    if (ImGui::Button("É¾³ı²âÊÔÎÄ¼ş", ImVec2(280, 30))) DeleteFileFromUSB();
+    // 2. æ–‡ä»¶æ“ä½œ
+    ImGui::Text("æ–‡ä»¶æ“ä½œ");
+    if (ImGui::Button("å†™æµ‹è¯•æ–‡ä»¶", ImVec2(150, 30))) WriteTest(); ImGui::SameLine();
+    if (ImGui::Button("æ‰“å¼€Uç›˜ç›®å½•", ImVec2(150, 30))) {
+        if (g_selectedDriveIdx >= 0 && g_selectedDriveIdx < g_logicalDrives.size()) {
+            ListFilesInDrive(g_logicalDrives[g_selectedDriveIdx]);
+            g_showDriveFiles = true;
+        }
+    }
+    if (ImGui::Button("å¤åˆ¶å½“å‰å¯æ‰§è¡Œæ–‡ä»¶", ImVec2(150, 30))) CopyFileToUSB(); ImGui::SameLine();
+    if (ImGui::Button("åˆ é™¤æµ‹è¯•æ–‡ä»¶", ImVec2(150, 30))) DeleteFileFromUSB();
     ImGui::Dummy(ImVec2(0, 10));
 
-    // 3. ĞÔÄÜ¼à¿Ø¿ª¹Ø
+    // 3. æ€§èƒ½ç›‘æ§
     ImGui::Separator();
-    ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.0f, 1.0f), "ĞÔÄÜ¼à¿Ø¿ª¹Ø");
+    ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.0f, 1.0f), "æ€§èƒ½ç›‘æ§");
     if (g_isMonitorRunning) {
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
-        if (ImGui::Button("Í£Ö¹ÊµÊ±¼à²â (STOP)", ImVec2(280, 50))) g_isMonitorRunning = false;
+        if (ImGui::Button("åœæ­¢å®æ—¶ç›‘æµ‹ (STOP)", ImVec2(280, 50))) g_isMonitorRunning = false;
         ImGui::PopStyleColor();
     }
     else {
-        if (ImGui::Button("¿ªÊ¼ÊµÊ±¼à²â (START)", ImVec2(280, 50))) {
+        if (ImGui::Button("å¼€å§‹å®æ—¶ç›‘æµ‹ (START)", ImVec2(280, 50))) {
             g_isMonitorRunning = true;
             g_lastMonitorTick = 0;
             memset(g_speedHistory, 0, sizeof(g_speedHistory));
@@ -106,9 +117,9 @@ void RenderGuiFrame() {
     }
     ImGui::Separator();
 
-    // 4. ÏµÍ³ÈÕÖ¾ (ÌîÂú×ó²àÊ£Óà¿Õ¼ä)
+    // 4. ç³»ç»Ÿæ—¥å¿— (æ˜¾ç¤ºæœ€è¿‘çš„è¿è¡Œä¿¡æ¯)
     ImGui::Dummy(ImVec2(0, 10));
-    ImGui::Text("ÏµÍ³ÈÕÖ¾");
+    ImGui::Text("ç³»ç»Ÿæ—¥å¿—");
     ImGui::BeginChild("LogRegion", ImVec2(0, 0), true);
     for (const auto& log : g_logs) ImGui::TextWrapped("%s", log.c_str());
     if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) ImGui::SetScrollHereY(1.0f);
@@ -116,56 +127,56 @@ void RenderGuiFrame() {
 
 
     // =======================================================
-    // [ÇĞ»»µ½ÓÒ²àÁĞ]
+    // [ï¿½Ğ»ï¿½ï¿½ï¿½ï¿½Ò²ï¿½ï¿½ï¿½]
     // =======================================================
     ImGui::NextColumn();
 
-    // ¡¾Ä§·¨´úÂë 2¡¿£ºÇ¿ÖÆ°Ñ¹â±êÀ­»Øµ½¶¥²¿£¡
+    // ï¿½ï¿½Ä§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 2ï¿½ï¿½ï¿½ï¿½Ç¿ï¿½Æ°Ñ¹ï¿½ï¿½ï¿½ï¿½ï¿½Øµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     ImGui::SetCursorPosY(start_y);
 
     // =======================================================
-    // [ÓÒ²àÁĞÄÚÈİ]£ºÍ¼±í + ÁĞ±í
+    // [ï¿½Ò²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½]ï¿½ï¿½Í¼ï¿½ï¿½ + ï¿½Ğ±ï¿½
     // =======================================================
 
-    // 1. ¶¥²¿£ºÊµÊ±ÕÛÏßÍ¼ (ÒÑ»Ö¸´ Target ±êÇ©)
+    // 1. ç»˜åˆ¶å®æ—¶é€Ÿåº¦æ›²çº¿ (å¸¦ Target æ ‡ç­¾)
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.08f, 0.08f, 0.08f, 1.0f));
-    ImGui::BeginChild("GraphRegion", ImVec2(0, 240), true); // ¹Ì¶¨¸ß¶È
+    ImGui::BeginChild("GraphRegion", ImVec2(0, 240), true); // ï¿½Ì¶ï¿½ï¿½ß¶ï¿½
 
-    // --- ±êÌâĞĞ ---
-    ImGui::Text("ÊµÊ±´«ÊäËÙÂÊ¿ÉÊÓ»¯");
+    // --- æ ‡é¢˜ ---
+    ImGui::Text("å®æ—¶é€Ÿåº¦æ›²çº¿");
 
-    // ÓÒ¶ÔÆëÏÔÊ¾×´Ì¬
+    // ï¿½Ò¶ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾×´Ì¬
     ImGui::SameLine();
     float avail_w = ImGui::GetContentRegionAvail().x;
     ImGui::SetCursorPosX(avail_w - 120);
-    ImGui::TextDisabled(g_isMonitorRunning ? "[¼à¿ØÖĞ...]" : "[´ı»ú]");
+    ImGui::TextDisabled(g_isMonitorRunning ? "[è¿è¡Œä¸­...]" : "[åœæ­¢]");
 
     // ==============================================
-    // ¡¾ÒÑ»Ö¸´¡¿£º´óºÅ»ÆÉ«×ÖÌåÏÔÊ¾ Target Ä¿±ê
+    // ï¿½ï¿½ï¿½Ñ»Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å»ï¿½É«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾ Target Ä¿ï¿½ï¿½
     // ==============================================
-    std::string targetLabel = "Î´Ñ¡ÔñÄ¿±ê (No Target)";
+    std::string targetLabel = "æœªé€‰æ‹©ç›®æ ‡ (No Target)";
     if (g_selectedDriveIdx >= 0 && g_selectedDriveIdx < g_logicalDrives.size()) {
-        // µ÷ÓÃ GetDriveLabel »ñÈ¡¾í±ê (ÀıÈç SanDisk)
+        // ï¿½ï¿½ï¿½ï¿½ GetDriveLabel ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ SanDisk)
         std::string label = GetDriveLabel(g_logicalDrives[g_selectedDriveIdx]);
         targetLabel = g_logicalDrives[g_selectedDriveIdx] + " (" + label + ")";
     }
 
-    ImGui::SetWindowFontScale(1.3f); // ·Å´ó 1.3 ±¶
+    ImGui::SetWindowFontScale(1.3f); // ï¿½Å´ï¿½ 1.3 ï¿½ï¿½
     ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "Target: %s", targetLabel.c_str());
-    ImGui::SetWindowFontScale(1.0f); // »Ö¸´Õı³£´óĞ¡
+    ImGui::SetWindowFontScale(1.0f); // ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğ¡
     // ==============================================
 
-    // ¼ÆËã×î´óÖµ
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµ
     float max_val = 1.0f;
     for (int i = 0; i < 90; i++) if (g_speedHistory[i] > max_val) max_val = g_speedHistory[i];
     max_val *= 1.2f;
 
-    // ÏÔÊ¾µ±Ç°ËÙ¶ÈÊıÖµ
+    // ï¿½ï¿½Ê¾ï¿½ï¿½Ç°ï¿½Ù¶ï¿½ï¿½ï¿½Öµ
     float currentSpeed = g_historyOffset > 0 ? g_speedHistory[(g_historyOffset - 1 + 90) % 90] : 0.0f;
     char overlay[64];
     sprintf_s(overlay, "Current: %.1f MB/s", currentSpeed);
 
-    // »æÖÆÍ¼±í
+    // ï¿½ï¿½ï¿½ï¿½Í¼ï¿½ï¿½
     ImGui::PushStyleColor(ImGuiCol_PlotLines, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
     ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.02f, 0.02f, 0.02f, 1.0f));
     ImGui::PlotLines("##SpeedGraphBig", g_speedHistory, 90, g_historyOffset, overlay, 0.0f, max_val, ImVec2(-1, -1));
@@ -176,20 +187,91 @@ void RenderGuiFrame() {
 
     ImGui::Dummy(ImVec2(0, 5));
 
-    // 2. µ×²¿£ºÉè±¸ÁĞ±í
-    ImGui::Text("USB ×ÜÏßÉè±¸Ê÷ (Live)");
+    // 2. å³ä¾§è®¾å¤‡åˆ—è¡¨
+    ImGui::Text("USB è¿æ¥è®¾å¤‡ (Live)");
     ImGui::SameLine();
-    if (ImGui::Button("Ë¢ĞÂÁĞ±í")) ScanUSBDevices();
+    if (ImGui::Button("åˆ·æ–°è®¾å¤‡")) {
+        // å”¯ä¸€çš„â€œåˆ·æ–°è®¾å¤‡â€æŒ‰é’®ï¼Œç”¨äºåˆ·æ–°è®¾å¤‡ä¿¡æ¯ä¸é©±åŠ¨å™¨åˆ—è¡¨
+        ScanUSBDevices();
+        RefreshDrives();
+        AppLog("å·²åˆ·æ–°è®¾å¤‡ä¸é©±åŠ¨å™¨åˆ—è¡¨");
+    }
+    
+        // å¦‚æœç”¨æˆ·æ‰“å¼€äº†Uç›˜ç›®å½•ï¼Œåˆ™åœ¨å³ä¸‹åŒºåŸŸæ˜¾ç¤ºæ–‡ä»¶åˆ—è¡¨ï¼ˆæ”¯æŒé€’å½’è¿›å…¥ï¼‰
+        if (g_showDriveFiles) {
+            ImGui::Separator();
+            // é¢åŒ…å±‘è·¯å¾„æ˜¾ç¤º
+            ImGui::Text("è·¯å¾„: %s", g_currentPath.c_str());
+
+            ImGui::BeginChild("DriveFiles", ImVec2(0, -30), true);
+            // ä½¿ç”¨å¸¦åŒå‡»æ”¯æŒçš„ selectableï¼ŒåŒå‡»è¿›å…¥ç›®å½•
+            for (int i = 0; i < g_currentDriveFiles.size(); ++i) {
+                const std::string& item = g_currentDriveFiles[i];
+                bool isDir = (!item.empty() && item.back() == '\\');
+                std::string display = isDir ? ("[D] " + item) : ("    " + item);
+                bool selected = (g_selectedFileIndex == i);
+                ImGui::PushID(i);
+                if (ImGui::Selectable(display.c_str(), selected, ImGuiSelectableFlags_AllowDoubleClick)) {
+                    g_selectedFileIndex = i;
+                }
+                // åŒå‡»è¿›å…¥ç›®å½•
+                if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
+                    if (isDir) {
+                        EnterDirectory(item);
+                        g_selectedFileIndex = -1;
+                    }
+                }
+                ImGui::PopID();
+            }
+            ImGui::EndChild();
+
+            // åº•éƒ¨å°æŒ‰é’®ï¼šè¿”å›ã€åˆ é™¤ã€æ‹·è´åˆ°ç”µè„‘ã€å…³é—­
+            ImGui::BeginGroup();
+            if (ImGui::Button("<- è¿”å›", ImVec2(90, 24))) {
+                GoUpDirectory();
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("åˆ é™¤", ImVec2(90, 24))) {
+                if (g_selectedFileIndex >= 0 && g_selectedFileIndex < g_currentDriveFiles.size()) {
+                    std::string sel = g_currentDriveFiles[g_selectedFileIndex];
+                    std::string full = g_currentPath + sel;
+                    if (DeleteFileOnDrive(full)) AppLog("åˆ é™¤æˆåŠŸ: " + full);
+                    else AppLog("åˆ é™¤å¤±è´¥: " + full);
+                    ListFilesInDrive(g_currentPath);
+                }
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("æ‹·è´åˆ°ç”µè„‘", ImVec2(110, 24))) {
+                if (g_selectedFileIndex >= 0 && g_selectedFileIndex < g_currentDriveFiles.size()) {
+                    std::string sel = g_currentDriveFiles[g_selectedFileIndex];
+                    CopyFileFromDriveToPC(sel);
+                    ListFilesInDrive(g_currentPath);
+                }
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("ä»ç”µè„‘æ‹·è´åˆ°Uç›˜", ImVec2(150, 24))) {
+                if (g_selectedDriveIdx >= 0) {
+                    CopyLocalFileToDriveWithDialog(g_logicalDrives[g_selectedDriveIdx]);
+                    ListFilesInDrive(g_currentPath.empty() ? g_logicalDrives[g_selectedDriveIdx] : g_currentPath);
+                }
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("å…³é—­ç›®å½•", ImVec2(90, 24))) {
+                g_showDriveFiles = false;
+                g_selectedFileIndex = -1;
+            }
+            ImGui::EndGroup();
+        }
 
     static ImGuiTableFlags table_flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY;
 
-    // ×¢Òâ£ºÕâÀïÓÃµÄÊÇ 4 ÁĞ (¼æÈİÄãÖ®Ç°µÄ´úÂë)
-    // Èç¹ûÄãÖ®Ç°ÒÑ¾­¼ÓÁËµÚ5ÁĞ(ÀíÂÛ´ø¿í)£¬¿ÉÒÔ°Ñ 4 ¸Ä³É 5£¬²¢°ÑÏÂÃæµÄÁĞ¼ÓÉÏ
+    // ×¢ï¿½â£ºï¿½ï¿½ï¿½ï¿½ï¿½Ãµï¿½ï¿½ï¿½ 4 ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö®Ç°ï¿½Ä´ï¿½ï¿½ï¿½)
+    // ï¿½ï¿½ï¿½ï¿½ï¿½Ö®Ç°ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½Ëµï¿½5ï¿½ï¿½(ï¿½ï¿½ï¿½Û´ï¿½ï¿½ï¿½)ï¿½ï¿½ï¿½ï¿½ï¿½Ô°ï¿½ 4 ï¿½Ä³ï¿½ 5ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğ¼ï¿½ï¿½ï¿½
     if (ImGui::BeginTable("DevTable", 4, table_flags, ImVec2(0, -1))) {
-        ImGui::TableSetupColumn("³§ÉÌ", ImGuiTableColumnFlags_WidthFixed, 120.0f);
-        ImGui::TableSetupColumn("Ğ­Òé", ImGuiTableColumnFlags_WidthFixed, 80.0f);
-        ImGui::TableSetupColumn("Éè±¸Ãû³Æ");
-        ImGui::TableSetupColumn("Ó²¼ş ID");
+        ImGui::TableSetupColumn("å‚å•†", ImGuiTableColumnFlags_WidthFixed, 120.0f);
+        ImGui::TableSetupColumn("åè®®", ImGuiTableColumnFlags_WidthFixed, 80.0f);
+        ImGui::TableSetupColumn("è®¾å¤‡åç§°");
+        ImGui::TableSetupColumn("ç¡¬ä»¶ ID");
         ImGui::TableHeadersRow();
 
         for (int i = 0; i < g_usbDevices.size(); i++) {

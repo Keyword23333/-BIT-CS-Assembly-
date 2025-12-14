@@ -3,43 +3,57 @@
 #include <vector>
 #include <windows.h>
 
-// ¶¨Òå USB Éè±¸½á¹¹Ìå
+// ï¿½ï¿½ï¿½ï¿½ USB ï¿½è±¸ï¿½á¹¹ï¿½ï¿½
 struct USBDevice {
-    std::string name;           // Éè±¸Ãû³Æ£¨Èç£ºUSB Mass Storage Device£©
-    std::string vendor;         // ³§ÉÌĞÅÏ¢£¨Vendor / Manufacturer£©
-    std::string hwid;           // Ó²¼ş ID£¨Hardware ID£©
-	std::string protocol;       // Ğ­Òé°æ±¾£¨Èç USB 2.0 / USB 3.0£©
+    std::string name;           // ï¿½è±¸ï¿½ï¿½ï¿½Æ£ï¿½ï¿½ç£ºUSB Mass Storage Deviceï¿½ï¿½
+    std::string vendor;         // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½Vendor / Manufacturerï¿½ï¿½
+    std::string hwid;           // Ó²ï¿½ï¿½ IDï¿½ï¿½Hardware IDï¿½ï¿½
+	std::string protocol;       // Ğ­ï¿½ï¿½æ±¾ï¿½ï¿½ï¿½ï¿½ USB 2.0 / USB 3.0ï¿½ï¿½
 };
 
-// ²âËÙ½á¹û½á¹¹Ìå
+// ï¿½ï¿½ï¿½Ù½ï¿½ï¿½ï¿½á¹¹ï¿½ï¿½
 struct SpeedResult {
-	bool valid;                  // ²âÊÔ½á¹ûÊÇ·ñÓĞĞ§
-	double writeSpeedMBps;       // Ğ´ÈëËÙ¶È (MB/s)
-	double readSpeedMBps;        // ¶ÁÈ¡ËÙ¶È (MB/s)
-	std::string message;         // ×´Ì¬ÏûÏ¢
+	bool valid;                  // ï¿½ï¿½ï¿½Ô½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½Ğ§
+	double writeSpeedMBps;       // Ğ´ï¿½ï¿½ï¿½Ù¶ï¿½ (MB/s)
+	double readSpeedMBps;        // ï¿½ï¿½È¡ï¿½Ù¶ï¿½ (MB/s)
+	std::string message;         // ×´Ì¬ï¿½ï¿½Ï¢
 };
 
-extern bool g_isMonitorRunning;         // ¿ª¹Ø
-extern float g_speedHistory[90];        // ±£´æ×î½ü90´ÎµÄÊı¾İ(Í¼±íÓÃ)
-extern int g_historyOffset;             // Í¼±í¹ö¶¯Æ«ÒÆÁ¿
-extern std::string g_monitorDevName;    // µ±Ç°ÕıÔÚ²âµÄÉè±¸Ãû
-extern DWORD g_lastMonitorTick;         // ÉÏÒ»´Î²âËÙµÄÊ±¼ä´Á
+extern bool g_isMonitorRunning;         // ï¿½ï¿½ï¿½ï¿½
+extern float g_speedHistory[90];        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½90ï¿½Îµï¿½ï¿½ï¿½ï¿½ï¿½(Í¼ï¿½ï¿½ï¿½ï¿½)
+extern int g_historyOffset;             // Í¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ«ï¿½ï¿½ï¿½ï¿½
+extern std::string g_monitorDevName;    // ï¿½ï¿½Ç°ï¿½ï¿½ï¿½Ú²ï¿½ï¿½ï¿½è±¸ï¿½ï¿½
+extern DWORD g_lastMonitorTick;         // ï¿½ï¿½Ò»ï¿½Î²ï¿½ï¿½Ùµï¿½Ê±ï¿½ï¿½ï¿½
 
  
-extern std::vector<USBDevice> g_usbDevices;             // ´æ´¢µ±Ç°¼ì²âµ½µÄ USB Éè±¸ÁĞ±í
-extern std::vector<std::string> g_logicalDrives;        // ´æ´¢ÏµÍ³µÄÂß¼­Çı¶¯Æ÷ÁĞ±í£¨Èç F:\£©
-extern std::vector<std::string> g_logs;                 // Ó¦ÓÃ³ÌĞòÈÕÖ¾£¬ÓÃÓÚ¼ÇÂ¼ÊÂ¼ş»òµ÷ÊÔĞÅÏ¢
-extern int g_selectedDriveIdx;                          // µ±Ç°Ñ¡ÖĞµÄÇı¶¯Æ÷Ë÷Òı£¨ÓÃÓÚ UI »òÄÚ²¿Âß¼­£©
-extern int g_selectedDeviceIndex;                       // µ±Ç°Ñ¡ÖĞµÄ USB Éè±¸Ë÷Òı
-extern char g_userBuffer[128];                          // ÓÃ»§ÊäÈëµÄ×Ö·û»º³åÇø£¨´óĞ¡Îª 128 ×Ö½Ú£©
-extern SpeedResult g_lastSpeedTest;                     // ±£´æÉÏÒ»´Î´ÅÅÌ²âËÙ½á¹ûµÄ½á¹¹Ìå
+extern std::vector<USBDevice> g_usbDevices;             // ï¿½æ´¢ï¿½ï¿½Ç°ï¿½ï¿½âµ½ï¿½ï¿½ USB ï¿½è±¸ï¿½Ğ±ï¿½
+extern std::vector<std::string> g_logicalDrives;        // ï¿½æ´¢ÏµÍ³ï¿½ï¿½ï¿½ß¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğ±ï¿½ï¿½ï¿½ï¿½ï¿½ F:\ï¿½ï¿½
+extern std::vector<std::string> g_logs;                 // Ó¦ï¿½Ã³ï¿½ï¿½ï¿½ï¿½ï¿½Ö¾ï¿½ï¿½ï¿½ï¿½ï¿½Ú¼ï¿½Â¼ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
+extern int g_selectedDriveIdx;                          // ï¿½ï¿½Ç°Ñ¡ï¿½Ğµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ UI ï¿½ï¿½ï¿½Ú²ï¿½ï¿½ß¼ï¿½ï¿½ï¿½
+extern int g_selectedDeviceIndex;                       // ï¿½ï¿½Ç°Ñ¡ï¿½Ğµï¿½ USB ï¿½è±¸ï¿½ï¿½ï¿½ï¿½
+extern char g_userBuffer[128];                          // ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğ¡Îª 128 ï¿½Ö½Ú£ï¿½
+extern SpeedResult g_lastSpeedTest;                     // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½Î´ï¿½ï¿½Ì²ï¿½ï¿½Ù½ï¿½ï¿½ï¿½Ä½á¹¹ï¿½ï¿½
+
+extern std::vector<std::string> g_currentDriveFiles;    // å½“å‰æ˜¾ç¤ºçš„Uç›˜æ–‡ä»¶åˆ—è¡¨ï¼ˆåªåˆ—å‡ºæ ¹ç›®å½•ï¼‰
+extern int g_selectedFileIndex;                         // UIä¸­é€‰ä¸­çš„æ–‡ä»¶ç´¢å¼•
+extern bool g_showDriveFiles;                           // æ˜¯å¦åœ¨å³ä¸‹åŒºåŸŸæ˜¾ç¤ºUç›˜æ–‡ä»¶åˆ—è¡¨
+extern std::string g_currentPath;                       // å½“å‰æµè§ˆçš„è·¯å¾„ï¼ˆåŒ…å«ç›˜ç¬¦ï¼‰ï¼Œä¾‹å¦‚ "F:\\"
+extern std::vector<std::string> g_pathStack;            // è·¯å¾„æ ˆï¼Œç”¨äºè¿”å›
 
 
-// ¹¤¾ßº¯ÊıÉùÃ÷
-void AppLog(const std::string& msg);                    // ¼ÇÂ¼ÈÕÖ¾£¬½«ÏûÏ¢×·¼Óµ½ g_logs ÖĞ
-std::string WStringToString(const std::wstring& wstr);  // ½« std::wstring ×ª»»Îª std::string£¨Í¨³£ÓÃÓÚ´¦Àí Windows API ·µ»ØµÄ¿í×Ö·û£©
-void RunDiskBenchmark();                                // ÔËĞĞ´ÅÅÌ»ù×¼²âÊÔ£¬²âÁ¿¶ÁĞ´ËÙ¶È
-void UpdateRealTimeMonitor();                           // ¸üĞÂÊµÊ±¼à¿ØÊı¾İ
-void CopyFileToUSB();                                   // ½«Ö¸¶¨ÎÄ¼ş¸´ÖÆµ½Ñ¡ÖĞµÄ USB Éè±¸
-void DeleteFileFromUSB();                               // ´ÓÑ¡ÖĞµÄ USB Éè±¸É¾³ıÖ¸¶¨ÎÄ¼ş
-std::string GetDriveLabel(const std::string& driveLetter);		  // »ñÈ¡Ö¸¶¨Çı¶¯Æ÷µÄ¾í±ê£¨Èç SanDisk£©
+// ï¿½ï¿½ï¿½ßºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+void AppLog(const std::string& msg);                    // ï¿½ï¿½Â¼ï¿½ï¿½Ö¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢×·ï¿½Óµï¿½ g_logs ï¿½ï¿½
+std::string WStringToString(const std::wstring& wstr);  // ï¿½ï¿½ std::wstring ×ªï¿½ï¿½Îª std::stringï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½Ú´ï¿½ï¿½ï¿½ Windows API ï¿½ï¿½ï¿½ØµÄ¿ï¿½ï¿½Ö·ï¿½ï¿½ï¿½
+void RunDiskBenchmark();                                // ï¿½ï¿½ï¿½Ğ´ï¿½ï¿½Ì»ï¿½×¼ï¿½ï¿½ï¿½Ô£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğ´ï¿½Ù¶ï¿½
+void UpdateRealTimeMonitor();                           // ï¿½ï¿½ï¿½ï¿½ÊµÊ±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+void CopyFileToUSB();                                   // ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½Æµï¿½Ñ¡ï¿½Ğµï¿½ USB ï¿½è±¸
+void DeleteFileFromUSB();                               // ï¿½ï¿½Ñ¡ï¿½Ğµï¿½ USB ï¿½è±¸É¾ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½Ä¼ï¿½
+std::string GetDriveLabel(const std::string& driveLetter);		  // ï¿½ï¿½È¡Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¾ï¿½ï¿½ê£¨ï¿½ï¿½ SanDiskï¿½ï¿½
+
+// æ–‡ä»¶åˆ—è¡¨æ“ä½œï¼ˆåœ¨UIä¸­ä½¿ç”¨ï¼‰
+void ListFilesInDrive(const std::string& drive);
+bool DeleteFileOnDrive(const std::string& fullPath);
+bool CopyLocalFileToDriveWithDialog(const std::string& drive);
+bool EnterDirectory(const std::string& dirname);
+bool GoUpDirectory();
+bool CopyFileFromDriveToPC(const std::string& srcRelative);

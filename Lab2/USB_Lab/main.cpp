@@ -10,12 +10,12 @@
 
 int main(int, char**)
 {
-    // 1. ´´½¨´°¿Ú
+    // 1. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     WNDCLASSEX wc = { sizeof(WNDCLASSEX), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(NULL), NULL, NULL, NULL, NULL, _T("ImGui USB Lab"), NULL };
     ::RegisterClassEx(&wc);
-    HWND hwnd = ::CreateWindow(wc.lpszClassName, _T("USB ½Ó¿ÚÊµÑé (Modular)"), WS_OVERLAPPEDWINDOW, 100, 100, 1000, 700, NULL, NULL, wc.hInstance, NULL);
+    HWND hwnd = ::CreateWindow(wc.lpszClassName, _T("USB ï¿½Ó¿ï¿½Êµï¿½ï¿½ (Modular)"), WS_OVERLAPPEDWINDOW, 100, 100, 1000, 700, NULL, NULL, wc.hInstance, NULL);
 
-    // 2. ³õÊ¼»¯ D3D
+    // 2. ï¿½ï¿½Ê¼ï¿½ï¿½ D3D
     if (!CreateDeviceD3D(hwnd)) {
         CleanupDeviceD3D();
         ::UnregisterClass(wc.lpszClassName, wc.hInstance);
@@ -25,15 +25,15 @@ int main(int, char**)
     ::ShowWindow(hwnd, SW_SHOWDEFAULT);
     ::UpdateWindow(hwnd);
 
-    // 3. ³õÊ¼»¯ GUI
+    // 3. ï¿½ï¿½Ê¼ï¿½ï¿½ GUI
     InitGui(hwnd);
 
-    // 4. ³õÊ¼Êý¾ÝÉ¨Ãè
+    // 4. ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½É¨ï¿½ï¿½
     GetUserInfo();
     ScanUSBDevices();
     RefreshDrives();
 
-    // 5. Ö÷Ñ­»·
+    // 5. ï¿½ï¿½Ñ­ï¿½ï¿½
     bool done = false;
     while (!done) {
         MSG msg;
@@ -44,10 +44,10 @@ int main(int, char**)
         }
         if (done) break;
 
-        // 6. ºËÐÄäÖÈ¾Á÷³Ì
-        RenderGuiFrame(); // Éú³É ImGui Êý¾Ý
+        // 6. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¾ï¿½ï¿½ï¿½ï¿½
+        RenderGuiFrame(); // ï¿½ï¿½ï¿½ï¿½ ImGui ï¿½ï¿½ï¿½ï¿½
 
-        // Ö´ÐÐ DirectX »æÖÆ
+        // Ö´ï¿½ï¿½ DirectX ï¿½ï¿½ï¿½ï¿½
         const float clear_color_with_alpha[4] = { 0.1f, 0.1f, 0.1f, 1.0f };
         g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, NULL);
         g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, clear_color_with_alpha);
@@ -55,7 +55,7 @@ int main(int, char**)
         g_pSwapChain->Present(1, 0);
     }
 
-    // 7. ÇåÀí
+    // 7. ï¿½ï¿½ï¿½ï¿½
     ShutdownGui();
     CleanupDeviceD3D();
     ::DestroyWindow(hwnd);
