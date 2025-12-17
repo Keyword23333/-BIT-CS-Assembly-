@@ -35,16 +35,30 @@
 本项目采用基于文件划分的模块化架构，通过统一的包含文件（.inc）共享数据和接口定义：
 
 ```mermaid
-项目架构：
-├── 主控制模块 (main.asm)           # 程序入口、窗口管理、消息循环
-├── 游戏逻辑模块 (game_logic.asm)    # 核心算法实现
-├── 输入处理模块 (input_handler.asm) # 键盘和鼠标输入处理
-├── 界面绘制模块 (ui_draw.asm)       # 图形界面渲染
-├── 资源管理模块 (resource_manager.asm) # GDI资源管理
-├── 数据结构定义 (structs.inc)      # 所有数据结构定义
-├── 常量定义文件 (constants.inc)     # 游戏常量定义
-├── 全局变量声明 (globals.inc)       # 全局变量外部引用
-└── 函数原型声明 (prototypes.inc)    # 所有函数原型声明
+graph TD
+    subgraph "头文件层 (.inc 文件)"
+        direction LR
+        A["数据结构定义<br/><font size=2>包含方块结构、游戏状态结构、坐标数据结构等</font>"]
+        B["常量定义文件<br/><font size=2>包含游戏区域尺寸、方块类型、颜色值、游戏速度等常量</font>"]
+        C["全局变量声明<br/><font size=2>声明游戏状态变量、图形对象句柄、窗口句柄等全局变量</font>"]
+        D["函数原型声明<br/><font size=2>声明所有外部函数接口及参数类型</font>"]
+    end
+    
+    subgraph "源文件层 (.asm 文件)"
+        direction LR
+        E["主控制模块<br/><font size=2>程序入口点，负责窗口创建、管理和主消息循环</font>"]
+        F["游戏逻辑模块<br/><font size=2>实现方块生成算法、移动碰撞检测、消行计分逻辑</font>"]
+        G["输入处理模块<br/><font size=2>处理键盘和鼠标事件，进行输入验证</font>"]
+        H["界面绘制模块<br/><font size=2>负责游戏区域绘制、方块渲染和UI元素显示</font>"]
+        I["资源管理模块<br/><font size=2>负责GDI资源创建、管理和释放，进行内存管理</font>"]
+    end
+    
+    %% 样式设置
+    classDef incFile fill:#e8f5e9,stroke:#4caf50,stroke-width:2px
+    classDef asmFile fill:#e3f2fd,stroke:#2196f3,stroke-width:2px
+    
+    class A,B,C,D incFile
+    class E,F,G,H,I asmFile
 ```
 
 ### 数据流和控制流
@@ -65,7 +79,7 @@
 
 * 全局数据的定义与初始化
 
-```mermaid
+```
 ; 窗口句柄结构体
 WINDOW_HANDLES STRUCT
     hInstance dd ?    ; 应用程序实例句柄
@@ -82,7 +96,7 @@ WINDOW_HANDLES ENDS
 
 * 定义程序入口点，控制执行流程
 
-```mermaid
+```
 main proc
     ; 调用窗口主函数
     invoke WinMain
@@ -94,7 +108,7 @@ main endp
 
 * 注册并创建主窗口
 
-```mermaid
+```
 WinMain proc
     ; …………
     ; 获取当前模块句柄，初始化窗口类结构
