@@ -408,28 +408,36 @@ cleanupResources函数在程序退出前删除所有GDI对象。通过检查句�
 
 ### 游戏开始
 
-![alt text](image.png)
+<img width="1476" height="971" alt="屏幕截图 2025-12-17 191835" src="https://github.com/user-attachments/assets/fbf2952d-fa19-47b4-9d7c-cafffe8279c0" />
 
 ### 无法移动，游戏结束
 
-![alt text](image-1.png)
+<img width="1470" height="967" alt="屏幕截图 2025-12-17 192250" src="https://github.com/user-attachments/assets/fcd22a26-5fc0-488b-8bc3-f219e14edb58" />
+
 
 ### 重新开始
 
-![alt text](image-2.png)
+<img width="1477" height="967" alt="屏幕截图 2025-12-17 192949" src="https://github.com/user-attachments/assets/9de28c7a-7494-4cad-a695-3929591e6d72" />
 
-![alt text](image-3.png)
+<img width="1472" height="970" alt="屏幕截图 2025-12-17 193029" src="https://github.com/user-attachments/assets/288b3a52-7ecb-459a-a7cf-ac274ac3077f" />
 
 ### 游戏胜利
 
-![alt text](image-4.png)
+<img width="1470" height="970" alt="屏幕截图 2025-12-17 193913" src="https://github.com/user-attachments/assets/3f366f13-5a6f-42c7-9294-7c0d0930204f" />
+
 
 ### 无尽模式
 
 由于作者实在难以通关，所以暂时修改了一下代码逻辑（随机生成块修改为“清华”和“北理”），便于展示功能：
 
-![alt text](image-5.png)
+<img width="1475" height="975" alt="屏幕截图 2025-12-17 194004" src="https://github.com/user-attachments/assets/4978ed74-5af5-42bb-8f3c-066fbc000d6c" />
 
-![alt text](image-6.png)
+<img width="1471" height="967" alt="屏幕截图 2025-12-17 194909" src="https://github.com/user-attachments/assets/f30a0950-0e0f-4eda-a1d5-205e3915d168" />
 
 ## 实验心得
+
+通过本次项目，我深刻体会到理论上的汇编知识与实际应用的差异。实践中需要面对Windows消息机制、GDI绘图、内存精确管理等复杂系统编程挑战。与C/C++等高级语言相比，汇编缺乏现成的数据结构和库函数支持，每个算法都需要从寄存器层面手动实现，调试也更为困难；并且汇编语言对于算法逻辑的要求较高，在实践过程中曾多次出现函数位置颠倒导致报错。但这种底层控制让我更加理解了计算机系统的工作机制，学会了通过MessageBox进行关键点调试、精确计算内存偏移访问结构体成员等实用技能。这些是在高级语言编程中难以得到的。
+
+在实现模块化设计的过程中，我尝试通过文件划分将系统分解为主控制、游戏逻辑、输入处理、界面绘制和资源管理五个核心模块，并设计了包含文件体系管理共享定义。头文件中，structs.inc集中定义数据结构，constants.inc统一管理常量，prototypes.inc声明函数接口，这种架构虽然需要手动维护模块边界和接口约定，但成功实现了高内聚低耦合的设计目标。实践过程中，不同的常量、函数等在模块中反复调用，使得分割时常常出现重复声明、调用错误等问题，这让我深刻理解了模块化不是简单的代码分割，而是精确的管理每个元素，使其有且只有一个定义源，模块间应该通过明确定义的接口通信，尽量减少隐式耦合。
+
+通过这个项目，我认识到，在操作系统内核、设备驱动等场景中，汇编提供了对硬件的直接控制能力。这些方面相比于高级的编程语言，具有明显的优势。实践中，我体验到了汇编的多种优化角度，也更加理解了现代操作系统软件与硬件协同工作的本质。
