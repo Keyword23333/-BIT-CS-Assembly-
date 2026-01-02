@@ -40,6 +40,13 @@ extern bool g_showDriveFiles;                           // 是否在右下区域
 extern std::string g_currentPath;                       // 当前浏览的路径（包含盘符），例如 "F:\\"
 extern std::vector<std::string> g_pathStack;            // 路径栈，用于返回
 
+// 写测试文件的 UI 支持
+extern bool g_showWriteTestModal;                       // 请求显示写测试文件弹窗
+extern std::string g_writeTestContent;                  // 弹窗中输入的内容
+
+// 将弹窗输入写入 U 盘测试文件
+bool WriteTestToDriveContent(const std::string& content);
+
 
 // ���ߺ�������
 void AppLog(const std::string& msg);                    // ��¼��־������Ϣ׷�ӵ� g_logs ��

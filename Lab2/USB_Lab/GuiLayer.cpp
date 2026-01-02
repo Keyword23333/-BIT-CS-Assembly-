@@ -6,6 +6,8 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_win32.h"
 #include "imgui/imgui_impl_dx11.h"
+#include <vector>
+#include <cstring>
 
 void InitGui(HWND hwnd) {
     IMGUI_CHECKVERSION();
@@ -294,6 +296,41 @@ void RenderGuiFrame() {
             ImGui::PopID();
         }
         ImGui::EndTable();
+    }
+
+    // 写测试文件的弹窗（由 WriteTest() 触发）
+    {
+        static std::vector<char> writeBuf;
+        if (g_showWriteTestModal) {
+            // 打开弹窗并准备缓冲区
+            ImGui::OpenPopup("Write Test File");
+            writeBuf.assign(8192, '\0');
+            // 复制初始内容到缓冲区
+            if (!g_writeTestContent.empty()) {
+                size_t copyLen = std::min(g_writeTestContent.size(), writeBuf.size() - 1);
+                memcpy(writeBuf.data(), g_writeTestContent.c_str(), copyLen);
+                writeBuf[copyLen] = '\0';
+            }
+            g_showWriteTestModal = false;
+        }
+
+        if (ImGui::BeginPopupModal("Write Test File", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("请输入要写入测试文件的内容：");
+            ImGui::Separator();
+            ImGui::InputTextMultiline("##WriteContent", writeBuf.data(), writeBuf.size(), ImVec2(500, 240));
+            ImGui::Separator();
+            if (ImGui::Button("写入")) {
+                // 保存并写入
+                g_writeTestContent = std::string(writeBuf.data());
+                WriteTestToDriveContent(g_writeTestContent);
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("取消")) {
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
     }
 
     ImGui::End();

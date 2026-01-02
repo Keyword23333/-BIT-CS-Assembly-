@@ -200,15 +200,22 @@ void UpdateRealTimeMonitor() {
     delete[] buffer;
 }
 ```
-- **写入/复制文件**：打开目录之后，可以写入一个测试文件，也可以从本地文件系统中选择一个文件填入。
+- **写入/复制文件**：打开目录之后，可以写入一个测试文件，自己写测试内容。
 ```C++
-//========================================
-// ADD YOUR CODE HERE
-//
-//
-//
-//
-//========================================
+// 将弹窗内容写入 U 盘（覆盖/创建文件），返回是否成功
+bool WriteTestToDriveContent(const std::string& content) {
+    std::ofstream out(path, std::ios::binary);
+    if (!out.is_open()) {
+        AppLog("写入失败：无法打开文件 " + path);
+        return false;
+    }
+    out << content; //核心写入逻辑
+    out.close();
+    AppLog("写入文件成功: " + path);
+    // 如果当前显示的是该盘目录，刷新列表
+    if (g_showDriveFiles && !g_currentPath.empty()) ListFilesInDrive(g_currentPath);
+    return true;
+}
 ```
 - **删除文件**：点击想要删除的文件即可对该文件进行删除
 ```c++

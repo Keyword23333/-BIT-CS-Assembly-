@@ -149,17 +149,9 @@ void RefreshDrives() {
 }
 
 void WriteTest() {
-    if (g_selectedDriveIdx < 0 || g_logicalDrives.empty()) return;
-    std::string path = g_logicalDrives[g_selectedDriveIdx] + "imgui_test.txt";
-    std::ofstream out(path);
-    if (out.is_open()) {
-        out << "ImGui Interface Test.\n" << g_userBuffer;
-        out.close();
-        AppLog("写入文件成功: " + path);
-    }
-    else {
-        AppLog("写入失败。");
-    }
+    // 切换为弹窗输入模式，由 GUI 层渲染弹窗
+    g_writeTestContent = std::string("ImGui Interface Test.\n") + std::string(g_userBuffer);
+    g_showWriteTestModal = true;
 }
 
 void RunDiskBenchmark() {
@@ -367,6 +359,37 @@ int g_selectedFileIndex = -1;
 bool g_showDriveFiles = false;
 std::string g_currentPath = "";
 std::vector<std::string> g_pathStack;
+
+// 写测试文件的 UI 支持
+bool g_showWriteTestModal = false;
+std::string g_writeTestContent = "ImGui Interface Test.\n";
+
+// 将弹窗内容写入 U 盘（覆盖/创建文件），返回是否成功
+bool WriteTestToDriveContent(const std::string& content) {
+    if (g_selectedDriveIdx < 0 || g_logicalDrives.empty()) {
+        AppLog("写入失败：未选择 U 盘");
+        return false;
+    }
+    std::string path = g_logicalDrives[g_selectedDriveIdx];
+    if (path.empty()) {
+        AppLog("写入失败：目标路径为空");
+        return false;
+    }
+    if (path.back() != '\\') path += "\\";
+    path += "imgui_test.txt";
+
+    std::ofstream out(path, std::ios::binary);
+    if (!out.is_open()) {
+        AppLog("写入失败：无法打开文件 " + path);
+        return false;
+    }
+    out << content;
+    out.close();
+    AppLog("写入文件成功: " + path);
+    // 如果当前显示的是该盘目录，刷新列表
+    if (g_showDriveFiles && !g_currentPath.empty()) ListFilesInDrive(g_currentPath);
+    return true;
+}
 
 void ListFilesInDrive(const std::string& drive) {
     g_currentDriveFiles.clear();
